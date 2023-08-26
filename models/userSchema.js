@@ -1,5 +1,4 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const validator = require("validator");
 
@@ -39,7 +38,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please enter your phone number!"],
     validate: {
       validator: function (v) {
-        return /^[0-9]{10}/.test(v);
+        return /^\d{10}$/.test(v);
       },
       message: "Please enter a valid 10-digit number!",
     },
@@ -64,9 +63,6 @@ const userSchema = new mongoose.Schema({
   cartDetails: {
     products: [
       {
-        productId: {
-          type: String,
-        },
         name: {
           type: String,
         },
@@ -88,6 +84,9 @@ const userSchema = new mongoose.Schema({
         imageUrl: {
           type: String,
         },
+        productId: {
+          type: String,
+        },
       },
     ],
     totalPrice: {
@@ -95,6 +94,88 @@ const userSchema = new mongoose.Schema({
       default: 0,
     },
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  orderDetails: [
+    {
+      fullName: {
+        type: String,
+      },
+      email: {
+        type: String,
+      },
+      phoneNumber: {
+        type: Number,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+      cartDetails: {
+        products: [
+          {
+            name: {
+              type: String,
+            },
+            category: {
+              type: String,
+            },
+            price: {
+              type: Number,
+            },
+            quantity: {
+              type: Number,
+            },
+            status: {
+              type: String,
+            },
+            description: {
+              type: String,
+            },
+            imageUrl: {
+              type: String,
+            },
+            productId: {
+              type: String,
+            },
+          },
+        ],
+        totalPrice: {
+          type: Number,
+          default: 0,
+        },
+      },
+      orderId: {
+        type: String,
+      },
+      shippingDetails: {
+        address: {
+          type: String,
+        },
+        city: {
+          type: String,
+        },
+        pincode: {
+          type: Number,
+        },
+        phoneNumber: {
+          type: String,
+        },
+        country: {
+          type: String,
+        },
+        state: {
+          type: String,
+        },
+      },
+      status: {
+        type: String,
+        default: "Ordered",
+      },
+    },
+  ],
   sentMessages: [
     {
       fullName: {
@@ -155,7 +236,7 @@ const userSchema = new mongoose.Schema({
         required: [true, "Please enter your phone number!"],
         validate: {
           validator: function (v) {
-            return /^[0-9]{10}/.test(v);
+            return /^\d{10}$/.test(v);
           },
           message: "Please enter a valid 10-digit number!",
         },
@@ -170,10 +251,6 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
   tokens: [
     {
       token: {
@@ -191,18 +268,6 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
-
-userSchema.methods.generateAuthToken = async function () {
-  let token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
-  this.tokens = this.tokens.concat({ token });
-  await this.save();
-  return token;
-};
-
-userSchema.methods.message = async function (messageDetails) {
-  this.sentMessages = this.sentMessages.concat(messageDetails);
-  await this.save();
-};
 
 const User = mongoose.model("user", userSchema);
 

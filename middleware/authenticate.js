@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization;
-  if (!token) {
+  if (token === "null") {
     res.status(401).json({ message: "No token provided!", status: 401 });
   }
   try {
@@ -10,7 +10,10 @@ const authenticate = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token!", status: 401 });
+    res.status(500).json({
+      message: "Something went wrong with the server!",
+      status: 500,
+    });
   }
 };
 
